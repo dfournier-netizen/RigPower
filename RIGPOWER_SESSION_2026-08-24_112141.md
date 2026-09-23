@@ -12,8 +12,9 @@
 | `RIGPOWER_2026-08-24_124341.html` | 12:43:41 EDT | 168,314 | Chunks 1–3 — **all four requested adds complete** |
 | `RIGPOWER_2026-08-24_162303.html` | 16:23:03 EDT | 178,732 | Chunk 4 — cable-order logic fix, run markers, per-family offsets |
 | `RIGPOWER_2026-08-25_103037.html` | Aug 25, 10:30:37 EDT | 183,403 | Chunk 5 — monotonic sweep chains, coiled slack |
+| `RIGPOWER_2026-09-21_204144.html` | Sep 21, 8:41:44 PM EDT | 213,717 | Chunk 6A — cable path tools, plan view, draggable devices |
 
-**FIFO [AGENT]:** the 4-copy cap applies to *iterations*; the original `RIGPOWER.html` is protected by standing instruction §0.1 and is not counted. Chunk 5 is the fifth iteration, so **`…_112141.html` (Chunk 1) was evicted**. This environment has no delete permission for the mounted folder, so the evicted file was **moved to `RIGPOWER/_to_delete/`** rather than removed — delete that folder when convenient.
+**FIFO [AGENT]:** the 4-copy cap applies to *iterations*; the original `RIGPOWER.html` is protected by standing instruction §0.1 and is not counted. Evicted so far: `…_112141.html` (Chunk 1) and `…_121848.html` (Chunk 2). This environment has no delete permission for the mounted folder, so evictions are **moved to `RIGPOWER/_to_delete/`** rather than removed — delete that folder when convenient.
 **Orchestrator:** Claude Opus 5 (high effort). Sub-tasks delegated to lower-tier agents.
 
 ---
@@ -193,6 +194,10 @@ Real Three.js r128 + JSZip from CDN in headless Chromium — not a stub. Synthet
 12. **Chain ordering is now a strict sweep** (Chunk 5), which never doubles back but costs ~19.6% more cable than the old greedy walk — mostly on two-row positions, where a sweep interleaves the rows. A "sweep out, one return leg back" variant would recover most of that; see §11.1.
 13. **Ring/cone markers anchored at a deck-level fixture** extend up to 0.12 scene units below y=0 — their own geometric radius, not sag. Number badges were lifted; the solid markers were not.
 14. **Home-run parts are still not tallied**, so the 415 ft saving figure covers ordering correctness across all segments, while the Auto-Cable parts *tables* still scope to jumpers only.
+15. **Paths do not affect the cable math yet** — 6A is tools only. They are drawn, measured and saved; `computeAutoCable` ignores them entirely, verified byte-identical.
+16. **A path's `carries` field is stored but unused** until 6B.
+17. **Swag sag defaults to 8 % of span** and is editable per path via `pa.sag` (feet), but there is no UI field for it yet — only the numeric point table and the saved JSON.
+18. **A run drawn with a single point** renders as a marker rather than erroring. Harmless, but it is not a run.
 
 ---
 
@@ -413,14 +418,82 @@ Monotonicity itself: 29 groups checked, **0 violations**. The old signature defe
 
 ---
 
-## 12. Next chunks
+## 12. Chunk 6A — cable path tools
+
+Dom's framing, which made this an architecture change rather than a feature:
+
+> *"Cable paths will serve as the defining rule set for where cable is allowed to run. Make this its own suite of tools where I can define cable break locations, hopovers, truss swags (a spot where cable swags from truss to truss, unsupported in the middle), and other plot notes. Make sure I'm able to accurately place these paths in 3D space."*
+
+### 12.1 Decisions
+
+| Decision | Who | Detail |
+|---|---|---|
+| **Everything routes through paths** | **[USER]** | Chose full graph routing over "home runs only" and over "direction only". The most rigorous reading, and the most work — which is why it splits (below). |
+| **Split 6A tools / 6B routing** | **[USER]** | Agreed to judge the drawing tools before the math underneath them gets rewired. 6A ships with **zero** auto-cable engine changes, verified byte-identical. |
+| **Unrouted positions fall back and are flagged** | **[USER]** | A position no path reaches keeps today's derived feed axis and straight-line lengths, and gets marked. The tool stays usable from day one and you can always tell a routed number from an estimated one. (6B implements the flagging; 6A is the fallback by construction, since the engine is untouched.) |
+| Snap to **fixtures/devices, position axes, deck/trim heights, other path points** | **[USER]** | All four. The last one matters structurally — two paths that nearly touch are not connected in a routing graph. |
+| Paths are **typed, defaulting to "both"** | **[USER]** | A `carries` field of power / data / both, so a separate data route can be drawn where you'd actually keep them apart. |
+| Semantics confirmed: **swag** = unsupported truss-to-truss span, **hopover** = crossing an obstruction, **break** = forced cable termination point, **note** = annotation with no math | **[USER]** | Confirmed all four readings rather than guessing at the domain terms. |
+| Device dragging folded into 6A | **[AGENT]** | It needs the identical screen→world plane-raycast plumbing, and was already on the list. Cheap once the plumbing exists. |
+
+### 12.2 What had to be built from scratch
+
+**Screen → world did not exist anywhere in the file.** Every existing interaction is either forward projection (3D → screen, as in `cacheProjections`) or object picking. Placing a point accurately needs the inverse. `screenToRig()` raycasts against a horizontal `THREE.Plane` at the current draw height and inverts `plotVec`. Round-trip error measured at **0 px** across 168 sample points in both camera modes at three draw heights.
+
+**A true orthographic plan view.** The existing `Top` preset only swung the perspective camera overhead — still foreshortened, so a fixture at the screen edge is not at its true plan (x, y), which is useless for accurate placement. `PLOT.perspCam` now holds the perspective camera and `PLOT.camera` is always the *active* one, swapped by `setViewMode()`. Keeping the active camera on `PLOT.camera` means every existing reader — raycasts, projections, the render loop — needed no change at all. Verified genuinely orthographic: two points at the same (x, y) and very different heights project to identical screen coordinates.
+
+### 12.3 What shipped
+
+- **Path model**: `state.paths` of `{id, name, kind, carries, pts[], pos, text, locked, sag?}`. Kinds: run (many points), swag (2), hopover (2), break (1), note (1).
+- **Path tool** (key 7): click to place, Enter to finish, Backspace to undo a point, Esc to cancel; single-point kinds commit on the first click. Live polyline preview on the overlay with the snapped cursor and a label naming what it caught.
+- **Move tool** (key 6): drag a device or a path point in the draw plane. Moving a distro re-runs `buildCables()`, because it changes every home-run origin and therefore every feed axis.
+- **Snapping** to fixtures, placed devices, other path points, and a position's principal axis — reusing `positionAxes()` rather than re-deriving it. Snap radius scales with the rig (≈549 mm at the test rig's scale).
+- **Draw height** as a feet field plus quick picks generated from the rig's own distinct trim heights.
+- **Rendering**: runs and hopovers as one tube per leg; breaks as octahedra; notes as a sphere with a canvas-sprite label; vertex beads on every point so they're visible and grabbable.
+- **Swags get a real catenary.** Chunk 5 removed hanging sag from jumpers and home runs because surplus is coiled — but an unsupported truss-to-truss span genuinely hangs, and the extra length is real cable. `swagCurve()` uses the same exact `(√y₀ + √y₂)²/2` floor bound from chunk 4, and `pathLengthFt()` measures a swag's **drawn arc**, not its chord. A 30 ft swag at the default 8 % sag measures 30.50 ft. **This is what finally gave `curveLen()` a job** — it had been dead since the chunk-4 sag solver was superseded.
+- **Paths tab**: a table with editable name / kind / carries / serves / note, and a numeric X/Y/Z **point table in feet** for the selected path — the guarantee behind "accurately place these paths in 3D space."
+
+### 12.4 Three bugs, one of them the worst of the session
+
+**1. A page-load crash that silently disabled the cable engine. [CRITICAL]**
+
+`setViewMode('persp')` is called at top level, but `PLOT.renderer` is null until the lazy `initPlot()` runs when the Plot tab is first opened. The resulting `TypeError` was uncaught in the page's single top-level script — and because of JavaScript's temporal dead zone, **every `let`/`const` declared after that point never initialised for the life of the page.** `PM_COLS`, `JUMPER_STD`, `cableSlack`, `_posAxisCache` all became permanently unreadable. Clicking Auto-Patch on a fresh load threw `ReferenceError: Cannot access 'PM_COLS' before initialization`; so did the entire cable engine.
+
+The insidious part: **any test that opened the Plot tab first would never see it.** It only reproduces on the exact real-use sequence of loading the page and going straight to Auto-Patch. Chunk 6A's own code was fine; it was unreachable through normal use.
+
+Fixed with three guards — `resizePlot()` early-returns without a renderer or a wrap element, `setViewMode()` only touches the camera plumbing when `PLOT.inited`, and `updateCam()` early-returns without a camera.
+
+**2. A pre-init plan-mode selection was silently discarded. [MODERATE, self-inflicted]**
+
+Gating `setViewMode` on `PLOT.inited` fixed the crash but left the camera assignment standing — and `initPlot()` then unconditionally overwrote `PLOT.camera` with the new perspective camera. `PLOT.viewMode` still read `'plan'`, the toolbar still showed "PLAN · orthographic", and the camera in use was perspective. The UI claimed accurate plan coordinates while quietly giving foreshortened ones. Fixed by reconciling in `initPlot()`: `if(PLOT.viewMode==='plan') PLOT.camera=ensureOrtho();`
+
+**3. A toolbar reflow that moved the canvas mid-draw. [COSMETIC]**
+
+`#pathStat`'s text grows when a draft starts ("0 paths" → "drawing Run · 1 pt · Enter to finish…"), which at narrower viewport widths wrapped the toolbar and shifted the plot canvas down ~33 px on the first click. Found because it made the verifier's own test fail, and the verifier correctly traced it to its own precomputed expectations rather than blaming the app. Fixed by reserving width on the element. Confirmed at 0 px delta afterwards.
+
+### 12.5 Verification
+
+All 13 items pass against the real, unmodified file, plus the Chunk 2/3/4/5 suites re-run clean.
+
+Highlights: `computeAutoCable()` output **byte-identical** before and after creating paths of all five kinds, which is the proof that 6A left the engine alone · screen→world round-trip 0 px error, 168 samples × 2 modes × 3 heights · snapping exact on fixtures, devices and path points, with axis snap returning `"axis · LX1"` · path tool end-to-end with Backspace and Esc · swag arc 30.50 ft over a 30 ft chord, collapsing to exactly 30.00 at zero sag, floor clamp holding at deck level · move tool drags devices and path points and no-ops on empty space · mesh counts exact (run = 2N−1, swag = 1 tube + N beads), no leak over 8 rebuild cycles · persistence round-trips including a project saved before paths existed · no throw on empty instances, single-point runs, coincident points, or plan mode before the first render.
+
+Perf: `buildPaths()` 21 ms for 40 paths / 300 points; `screenToRig` + `snapPoint` **0.033 ms per call** at 120 fixtures, which matters because it runs on every mousemove with the path tool.
+
+---
+
+## 13. Next chunks
 
 **All four requested adds are complete, plus the Chunk 4 follow-up.** Candidates carried forward, none committed to:
 
 - **Circuit-driven patching** — §9.1 of the technical reference, and still the biggest open gap: CSV circuit values are stored and displayed but don't auto-assign fixtures to SOCA circuits. Needs a parser for the circuit-naming convention (`L1-7`, `SOCA 2.3`) mapped onto position → multi → circuit. With Select Similar now able to grab a circuit in one click, this would close the loop.
 - **Home-run parts tally** — currently drawn in 3D but deliberately not counted, to avoid double-counting the Cables tab's multicable home runs. Unifying the two is a clean follow-up, and now that both sides use `buildRun` the two tallies are finally speaking the same language.
-- **Cable paths** — Dom's stated architecture: a suite where paths define *where cable is allowed to run*, overriding the auto-derived feed direction, with cable break locations, hopovers, truss swags (truss-to-truss, unsupported in the middle) and plot notes, all placeable accurately in 3D. **This is the intended successor to auto-derived feed direction, not an addition alongside it.**
-- **Drag devices and distros** in the 3D plot and a top-down view — prerequisite plumbing for path drawing, since both need a top-down mode and a 3D drag layer.
+- **Chunk 6B — the routing engine.** The other half of cable paths, and the one that changes the math:
+  - A routing **graph** built from path points, with junctions where paths meet (which is why point-to-point snapping matters).
+  - **Polyline-aware segments.** The single biggest structural change in the file so far: `cableCurve()` takes exactly two points and `segments[]` assumes a straight run between two fixture instances. A path-routed cable bends, so either each path leg becomes its own segment — which collides with `ai`/`bi`/`chainLen`, currently meaning *fixture chain* index, not path-leg index — or `cableCurve` learns to take a point list. These are separate concepts and must stay separate.
+  - **A fourth render family.** `cableFamily()` maps anything that isn't `power` or `homerun*` to `data`, silently. A swag is none of the three; it needs handling in `cableFamily`, `CABLE_OFFSET`, the colour/label branch in `buildCables`, and `addCableMarkers`'s `isHome` test. The failure mode is plausible-looking wrong colours, not a crash.
+  - **Two seams that must agree.** Feed direction (in `positionAxes`) and home-run length (in `groupCables`) are separate hooks in different functions. A path that changes one without the other produces a chain starting at the right end but reporting the wrong length. Decide which path applies to which position/group *before* touching either.
+  - **Unrouted flagging** — mark positions falling back to the derived axis, in the Auto-Cable stats and tinted in the plot.
+  - Swag arc length should count toward the cable order (6A measures it; nothing orders it yet).
 - **Two-row sweep with a return leg** — recover the ~19.6% the strict sweep costs; see §11.1.
 - **Tune the slack allowance** — see §10.5. A domain call, not a modelling one.
 - **Grow / Shrink by proximity** — offered in Chunk 2 and declined; `applySelection` is the hook if it's ever wanted.
