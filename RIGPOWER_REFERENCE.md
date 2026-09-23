@@ -1,5 +1,8 @@
 # RIGPOWER — Technical Reference & Handoff
 
+> **Chunk 6B addendum (September 23, 2026):** Current routing-branch build: `RIGPOWER_2026-09-23_130022.html`. Read `RIGPOWER_SESSION_2026-09-23.md` for graph routing, break spans, shared swag measurement, and fallback rendering. The Revision 2 body below remains a Chunks 1-5 reference with historical line numbers. `curveLen` is no longer the path-length authority; `routePathPoints` supplies the sampled geometry used for both lengths and rendering. Do not treat the older limitations list as a current completion checklist.
+
+
 > **Revision 2 — September 21, 2026.** Folds in chunks 1–5 (3D cable layer, navigation and
 > selection suite, graphical patch view, cable-ordering logic fix, monotonic sweep chains and
 > coiled slack). Sections 4, 5, 6, 8, 9, 10 and 11 were substantially rewritten; section 12 is

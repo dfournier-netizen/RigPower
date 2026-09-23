@@ -1,5 +1,8 @@
 # RIGPOWER — Handoff & To-Do
 
+> **Current branch update - September 23, 2026:** `RIGPOWER_2026-09-23_130022.html` completes Chunk 6B routing. See `RIGPOWER_SESSION_2026-09-23.md` for tested behavior, limitations, and integration instructions. Sections below preserve the earlier planning snapshot; their old current-build pointers, iteration inventory, and unfinished A/B status are historical. A (device dragging/plan view) shipped in 6A; B now routes along paths with flagged fallback. Do not redo E/F/H before checking the other agent's branch.
+
+
 **Written:** Monday, September 21, 2026, 7:50:00 PM EDT
 **Current build:** `RIGPOWER_2026-08-25_103037.html` — 183,403 bytes, 3,477 lines
 **Base (frozen, never modified):** `RIGPOWER.html` — 126,373 bytes, pre-merge standalone

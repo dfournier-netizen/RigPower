@@ -1,5 +1,8 @@
 # RIGPOWER — Project Notes
 
+> **Implementation status - September 23, 2026:** The routing branch now includes device dragging, plan view, path tools, and Chunk 6B routing. See `RIGPOWER_SESSION_2026-09-23.md` and `AGENTS.md` for the current build and constraints. Roadmap language below records the original goals. The current HTML still loads CDN dependencies and is not guaranteed to work offline on a fresh machine.
+
+
 **Written:** Monday, September 21, 2026, 7:50:00 PM EDT
 **Scope:** what this is for, how it's organised, and the principles that decide what belongs in it.
 **Companion:** `RIGPOWER_HANDOFF_2026-09-21_195000.md` (current state and to-do)

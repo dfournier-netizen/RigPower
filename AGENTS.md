@@ -5,15 +5,15 @@ Read this file before changing the project. Keep the context needed to continue 
 ## Read in this order
 
 1. `RIGPOWER_PROJECT_NOTES_2026-09-21_195000.md` — purpose, domain conventions, and design principles.
-2. `RIGPOWER_SESSION_2026-08-24_112141.md` — read the build table, standing instructions, latest completed chunk, and final next-chunks section first; then relevant earlier decisions. Despite its filename, this log includes September 21 work.
+2. `RIGPOWER_SESSION_2026-09-23.md` for current Chunk 6B implementation, limits, verification, and merge guidance; then `RIGPOWER_SESSION_2026-08-24_112141.md` — read the build table, standing instructions, latest completed chunk, and final next-chunks section first; then relevant earlier decisions. Despite its filename, this log includes September 21 work.
 3. `RIGPOWER_HANDOFF_2026-09-21_195000.md` — roadmap and known issues. Its build pointer and some completion statuses predate Chunk 6A.
 4. `RIGPOWER_REFERENCE.md` — architecture, parsing, electrical and cable logic, and verification details. Revision 2 covers Chunks 1–5; its build pointer and line numbers refer to the August 25 build.
 
-## Current baseline (updated September 22, 2026)
+## Current baseline (updated September 23, 2026; routing branch)
 
-- Develop from `RIGPOWER_2026-09-21_204144.html`: Chunk 6A, cable path tools, orthographic plan view, and draggable devices.
+- Develop from `RIGPOWER_2026-09-23_130022.html` on `codex/rigpower-6b-routing`: Chunk 6B routing, including the Chunk 6A tools. The September 21 build remains the regression baseline.
 - `RIGPOWER.html` is the frozen original, not the current app. `_to_delete/` contains retired iterations, not development baselines.
-- Chunk 6A paths can be drawn, measured, and saved, but do not affect Auto-Cable calculations. Chunk 6B is the pending routing-engine work; consult session-log sections 12 and 13 before planning it.
+- Paths now drive Auto-Cable lengths, feed ordering, and 3D geometry. Breaks force separately ordered spans; fallback positions are flagged. Read `RIGPOWER_SESSION_2026-09-23.md` for graph/attachment limits and the remaining cross-branch integration work. The other agent's E/F/H changes are not included here.
 - The app is a single HTML file with inline CSS and JavaScript. Open it in a browser; no package installation, build step, or local server is required. JSZip, Three.js r128, and fonts load from external URLs, so the current build requires network access for those dependencies.
 
 ## Resolve conflicting context
