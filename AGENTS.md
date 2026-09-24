@@ -5,15 +5,15 @@ Read this file before changing the project. Keep the context needed to continue 
 ## Read in this order
 
 1. `RIGPOWER_PROJECT_NOTES_2026-09-21_195000.md` — purpose, domain conventions, and design principles.
-2. `RIGPOWER_SESSION_2026-08-24_112141.md` — read the build table, standing instructions, latest completed chunk, and final next-chunks section first; then relevant earlier decisions. Despite its filename, this log includes September 21 work.
+2. `RIGPOWER_SESSION_2026-09-23_INTEGRATION.md` for the combined build and current verification; `RIGPOWER_SESSION_2026-09-23.md` for Chunk 6B implementation and limits; `RIGPOWER_SESSION_2026-09-22_215147.md` for E/F/H decisions; then `RIGPOWER_SESSION_2026-08-24_112141.md` — read the build table, standing instructions, latest completed chunk, and final next-chunks section first; then relevant earlier decisions. Despite its filename, this log includes September 21 work.
 3. `RIGPOWER_HANDOFF_2026-09-21_195000.md` — roadmap and known issues. Its build pointer and some completion statuses predate Chunk 6A.
 4. `RIGPOWER_REFERENCE.md` — architecture, parsing, electrical and cable logic, and verification details. Revision 2 covers Chunks 1–5; its build pointer and line numbers refer to the August 25 build.
 
-## Current baseline (updated September 22, 2026)
+## Current baseline (updated September 23, 2026; integration branch)
 
-- Develop from `RIGPOWER_2026-09-21_204144.html`: Chunk 6A, cable path tools, orthographic plan view, and draggable devices.
+- Develop from `RIGPOWER_2026-09-23_222010.html` on `codex/rigpower-integration`: combined Chunk 6B routing, E settings persistence, F live footprints, and H circuit-name assignment. The September 21 regression baseline is preserved in `_to_delete/`.
 - `RIGPOWER.html` is the frozen original, not the current app. `_to_delete/` contains retired iterations, not development baselines.
-- Chunk 6A paths can be drawn, measured, and saved, but do not affect Auto-Cable calculations. Chunk 6B is the pending routing-engine work; consult session-log sections 12 and 13 before planning it.
+- Paths now drive Auto-Cable lengths, feed ordering, and 3D geometry. Breaks force separately ordered spans; fallback positions are flagged. Read `RIGPOWER_SESSION_2026-09-23_INTEGRATION.md` for combined validation and `RIGPOWER_SESSION_2026-09-23.md` for graph/attachment limits. Both branches are integrated in the current HTML; main has not been updated.
 - The app is a single HTML file with inline CSS and JavaScript. Open it in a browser; no package installation, build step, or local server is required. JSZip, Three.js r128, and fonts load from external URLs, so the current build requires network access for those dependencies.
 
 ## Resolve conflicting context

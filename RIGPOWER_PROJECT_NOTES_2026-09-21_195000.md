@@ -1,5 +1,8 @@
 # RIGPOWER — Project Notes
 
+> **Combined build - September 23, 2026:** `RIGPOWER_2026-09-23_222010.html` integrates Chunk 6B routing with E (settings persistence), F (live footprint updates and legacy migration), and H (circuit-name assignment). See `RIGPOWER_SESSION_2026-09-23_INTEGRATION.md` for current verification and remaining limitations. Older build pointers, roadmap status, and line references below are historical.
+
+
 **Written:** Monday, September 21, 2026, 7:50:00 PM EDT
 **Scope:** what this is for, how it's organised, and the principles that decide what belongs in it.
 **Companion:** `RIGPOWER_HANDOFF_2026-09-21_195000.md` (current state and to-do)

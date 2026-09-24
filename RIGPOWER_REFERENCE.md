@@ -1,5 +1,8 @@
 # RIGPOWER — Technical Reference & Handoff
 
+> **Combined build - September 23, 2026:** `RIGPOWER_2026-09-23_222010.html` integrates Chunk 6B routing with E (settings persistence), F (live footprint updates and legacy migration), and H (circuit-name assignment). See `RIGPOWER_SESSION_2026-09-23_INTEGRATION.md` for current verification and remaining limitations. Older build pointers, roadmap status, and line references below are historical.
+
+
 > **Revision 2 — September 21, 2026.** Folds in chunks 1–5 (3D cable layer, navigation and
 > selection suite, graphical patch view, cable-ordering logic fix, monotonic sweep chains and
 > coiled slack). Sections 4, 5, 6, 8, 9, 10 and 11 were substantially rewritten; section 12 is
