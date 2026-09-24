@@ -1,10 +1,10 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const file=process.argv[2]||'engine-output.tmp',html=fs.readFileSync(file,'utf8');
 const source=html.slice(html.indexOf('function dist3('),html.indexOf('function renderAutoCable('));
-const ctx=vm.createContext({state:{},SWAG_SAG:.08,buildJumper:ft=>({total:Math.ceil(ft),pieces:[Math.ceil(ft)]})});vm.runInContext(source,ctx);
+const ctx=vm.createContext({state:{},SWAG_SAG:.08,buildJumper:ft=>({total:Math.ceil(ft),pieces:[Math.ceil(ft)]}),jumperStockFor:()=>null});vm.runInContext(source,ctx);
 function check(expr){assert(vm.runInContext(expr,ctx),expr);}
 function setup(paths,points=[[2000,0,1000],[4000,0,1000]],origin={x:0,y:0,z:1000}){
- ctx.state={paths,devices:[{...origin,placed:true}],instances:points.map((p,i)=>({x:p[0],y:p[1],z:p[2],id:'f'+i,pos:'LX',universe:1,assigned:{positionId:'p',multiId:'m',circuitIndex:0}}))};
+ ctx.state={paths,devices:[{...origin,kind:'distro',placed:true},{...origin,kind:'node',placed:true}],instances:points.map((p,i)=>({x:p[0],y:p[1],z:p[2],id:'f'+i,pos:'LX',universe:1,assigned:{positionId:'p',multiId:'m',circuitIndex:0}}))};
  vm.runInContext('var result=computeAutoCable()',ctx);
 }
 const p=(x,y=0,z=1000)=>({x,y,z});const run=(pts,other={})=>({id:'r',kind:'run',carries:'both',pos:'LX',pts,...other});

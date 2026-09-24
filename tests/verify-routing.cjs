@@ -13,7 +13,7 @@ function check(name,fn){try{fn();checks++;console.log('PASS '+name);}catch(e){fa
 async function setup(page){return page.evaluate(()=>{
   window.pt=(x,y=0,z=10)=>({x:x*304.8,y:y*304.8,z:z*304.8});
   window.fx=(id,x,y=0,z=10,pos='LX1')=>({id,type:'Test',pos,...pt(x,y,z),universe:1,address:1,assigned:{positionId:'p1',multiId:'m1',circuitIndex:0}});
-  window.resetRig=()=>{state={fixtures:[],positions:[],instances:[fx('a',10),fx('b',20),fx('c',30)],devices:[{id:'d1',kind:'distro',name:'Distro',placed:true,...pt(0)}],paths:[]};_posAxisCache=null;};
+  window.resetRig=()=>{state={fixtures:[],positions:[],instances:[fx('a',10),fx('b',20),fx('c',30)],devices:[{id:'d1',kind:'distro',name:'Distro',placed:true,...pt(0)},{id:'d2',kind:'node',name:'Node',placed:true,...pt(0)}],paths:[]};_posAxisCache=null;};
   window.route=(id,points,carries='both',kind='run',pos='LX1')=>({id,name:id,kind,carries,pts:points,pos,text:'',locked:false});
   resetRig();
 });}
@@ -29,7 +29,9 @@ async function setup(page){return page.evaluate(()=>{
   check('fresh-page compute before plot initialized, real Three r128',()=>{assert.equal(fresh.inited,false);assert.equal(fresh.three,'128');assert.equal(fresh.rep.segments.length,6);});
   const core=r=>JSON.parse(JSON.stringify(r,(k,v)=>['routing','routed','fallbackReason','routePoints','routeLegs','hasSwag','breakIndex','breakCount','sourceFamily','routeFamily','pos'].includes(k)?undefined:v));
   check('no-path cable lengths, ordering and stock match 6A',()=>{
-   const pick=r=>r.segments.map(s=>({kind:s.kind,aId:s.aId,bId:s.bId,raw:s.raw,std:s.std,pieces:s.pieces,ai:s.ai,bi:s.bi,chainLen:s.chainLen}));assert.deepEqual(pick(fresh.rep),pick(before));assert.deepEqual(fresh.rep.jumperParts,before.jumperParts);assert.deepEqual(fresh.rep.dataParts,before.dataParts);
+   const pick=r=>r.segments.map(s=>({kind:s.kind,aId:s.aId,bId:s.bId,raw:s.raw,std:s.std,pieces:s.pieces,ai:s.ai,bi:s.bi,chainLen:s.chainLen}));assert.deepEqual(pick(fresh.rep),pick(before));assert.deepEqual(fresh.rep.jumperParts,before.jumperParts);// Item I (Sept 23): measured data home runs are now counted with data parts, from the DMX table.
+   const expD={...before.dataParts};fresh.rep.segments.filter(s=>s.kind==='homerun-data').forEach(s=>(s.pieces||[s.std]).forEach(l=>{const k=fresh.rep.dataType+'|'+l;expD[k]=(expD[k]||0)+1;}));
+   assert.deepEqual(fresh.rep.dataParts,expD);
   });
   let r=await page.evaluate(()=>{state.paths=[route('bend',[pt(0),pt(0,10),pt(10,10),pt(10),pt(20),pt(30)])];return computeAutoCable();});
   check('bend follows 30ft path, not 10ft chord',()=>{const h=r.segments.find(s=>s.kind==='homerun-power');assert.equal(h.routed,true);assert.ok(Math.abs(h.raw-30)<1e-7);assert.ok(h.routePoints.length>=4);assert.equal(h.bId,'a');});
@@ -52,7 +54,7 @@ async function setup(page){return page.evaluate(()=>{
   check('fallback fixtures receive visible tint',()=>assert.ok(r.meshes.every(m=>m.emissive!==0)));
   const tint=await page.evaluate(()=>{PLOT.selectedSet=new Set();state.paths=[route('connected',[pt(0),pt(10),pt(20),pt(30)])];buildCables();return PLOT.meshes.map(m=>m.material.emissive.getHex());});
   check('restoring connected path clears fallback tint',()=>assert.ok(tint.every(c=>c===0)));
-  r=await page.evaluate(()=>{resetRig();state.instances=[fx('a',20),fx('b',25),fx('c',30)];Object.assign(state.devices[0],pt(20,5));state.paths=[route('trunk',[pt(10),pt(30)]),route('spur',[pt(20),pt(20,5)])];return computeAutoCable();});
+  r=await page.evaluate(()=>{resetRig();state.instances=[fx('a',20),fx('b',25),fx('c',30)];state.devices.forEach(d=>Object.assign(d,pt(20,5)));state.paths=[route('trunk',[pt(10),pt(30)]),route('spur',[pt(20),pt(20,5)])];return computeAutoCable();});
   check('vertex on middle of another leg forms T junction',()=>{assert.ok(r.segments.every(s=>s.routed));assert.ok(Math.abs(r.segments.find(s=>s.kind==='homerun-power').raw-5)<1e-7);});
   r=await page.evaluate(()=>{resetRig();state.paths=[route('bad',[pt(0),{x:NaN,y:0,z:3048},pt(30)])];return computeAutoCable();});
   check('malformed path never creates shortcut',()=>assert.ok(r.segments.every(s=>!s.routed)));
