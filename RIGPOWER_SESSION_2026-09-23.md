@@ -1,5 +1,7 @@
 # RIGPOWER session - September 23, 2026
 
+> Integration completed subsequently on `codex/rigpower-integration`; see `RIGPOWER_SESSION_2026-09-23_INTEGRATION.md`. This log records the original routing-only delivery.
+
 ## Scope and isolation
 
 [USER] Scheduled Chunk 6B for 2 AM Eastern: connect path tools to the routing engine, verify a new iteration, and commit it on an isolated branch without pushing or merging.

@@ -4,7 +4,9 @@ const assert=require('node:assert/strict');
 const path=require('node:path');
 const {pathToFileURL}=require('node:url');
 const {chromium}=require(process.env.RIGPOWER_PLAYWRIGHT||'playwright');
-const target=process.argv[2], baseline=process.argv[3]||'RIGPOWER_2026-09-21_204144.html';
+const fs=require('node:fs');
+const baselineName='RIGPOWER_2026-09-21_204144.html';
+const target=process.argv[2], baseline=process.argv[3]||(fs.existsSync(baselineName)?baselineName:path.join('_to_delete',baselineName));
 if(!target)throw Error('Supply the new HTML build');
 const failures=[];let checks=0;
 function check(name,fn){try{fn();checks++;console.log('PASS '+name);}catch(e){failures.push(name+': '+e.message);console.error('FAIL '+name+': '+e.message);}}
