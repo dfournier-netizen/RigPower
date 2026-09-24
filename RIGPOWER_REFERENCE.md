@@ -205,7 +205,7 @@ let state = {
 
 > **Note:** the in-file comment on `state` is stale and under-describes the real shape.
 > `fixtures[]` items also carry `footprint`; `instances[]` items also carry `universe`,
-> `address`, `circuit`, `userField1`, and sometimes `footprint` (see §9.6).
+> `address`, `circuit`, `userField1`, and — only in projects saved before item F — a stale `footprint` that Load now strips (§9 item 4).
 
 **Position → multi → circuit → slot hierarchy:**
 ```js
@@ -223,7 +223,7 @@ instance = { id, name, type:<fixtureName>, pos:<positionName>,
              x, y, z,             // millimeters, Z-up, from MVR Matrix
              fid,                 // FixtureID
              universe, address,   // DMX patch (decoded from MVR or set here)
-             footprint,           // per-instance snapshot, set by autoPatch only (§9.6)
+             footprint,           // legacy only: pre-item-F autoPatch snapshot, stripped on Load
              circuit, userField1, // from CSV bridge (null until imported)
              assigned:            // links a physical fixture to a power circuit:
                { positionId, multiId, circuitIndex } | null }
@@ -630,7 +630,8 @@ Vectorworks/Lightwright **worksheet CSV**.
 - The user uses **"User Field 1"** as a plaintext note for **fixture mode and footprint**
   (e.g. `Mode 1 / 32`, `56Ch Mode / 56`, `32ch`). `parseUserFieldModeFootprint()` (1489)
   extracts both from such strings.
-- **Not yet built:** circuit data is stored/displayed but does not yet *auto-assign*
+- **Now built (item H, September 22, 2026):** Patch tab → *Assign from circuit names* resolves `SOCA 2.3` / `2.3` / `L21-30 1.2` and `L1-7` against the fixture's hanging position, previews, and fills only unassigned fixtures. The next bullet is historical.
+- **Not yet built (historical):** circuit data is stored/displayed but does not yet *auto-assign*
   fixtures to SOCA circuits based on the imported circuit name (§9.9).
 
 ---
@@ -652,6 +653,8 @@ and `placed`** — devices live inside `state`), and `stockLengths`.
 totals.
 
 ### 8.2 What is NOT saved — a known gap
+
+> **Status September 23, 2026:** `PLOT.cable`, `PLOT.showPaths` and `cableSlack` are now saved (item E; keys `_cable`, `_showPaths`, `_slack`). `#uniSize`, `#jumperType`, `#dataType` and transient UI remain unsaved. The text below is the August state.
 
 `PLOT` and `cableSlack` are module-level and outside `state`, so **nothing added in chunks 1–5
 for cable-layer tuning survives a save/reload**:
@@ -686,16 +689,20 @@ Carry these forward — they are the honest edges of the current build.
    a string key in the parts tables (`jumperType+'|'+p`). Lengths always come from `JUMPER_STD`.
    A maintainer will reasonably assume "Cat5e" pulls an Ethernet stock table. It does not.
    Natural to fix alongside item 1.
-3. **Cable-layer settings and slack tolerance are not persisted** — §8.2.
+3. **Cable-layer settings and slack tolerance are not persisted** — §8.2. **Fixed by item E** (September 22); see §8.2 status.
 4. **Auto-patched instances freeze their footprint.** `autoPatch()` writes `it.footprint` per
    instance (2483); manual address edits never do. Edit a fixture type's footprint later and
    manually-patched instances pick it up live while auto-patched ones keep the stale snapshot.
+   **Fixed by item F** (September 22): no snapshot is written, and legacy snapshots are stripped on Load.
 5. **Dead code sits next to live code with no marker.** Verified zero callers:
    `solveSagScene` / `sagArc` / `curveLen` (1766–1791, the chunk-4 sag solver, superseded by
    `cableCurve`'s closed-form math at 1801), `chainOrder` (2995), and `fixSeq`/`posSeq`/`multiSeq`
    (670 — vestigial; ids come from `uid()`). The sag trio is the real risk: it computes the same
    visual via different math, directly above the function actually used. Someone will fix the
    wrong one.
+   **Status September 23:** still true in the combined build — `curveLen` is reached only via
+   `sagArc`/`solveSagScene`, none of which has a live caller; the Chunk 6A comment saying swags gave
+   `curveLen()` a job is stale since 6B samples the swag. Line numbers above are the August build's.
 6. **`segments[]` is not uniform** — home-run kinds omit `aId` (§5.9).
 
 ### Behavioural limits
@@ -712,8 +719,10 @@ Carry these forward — they are the honest edges of the current build.
    convention (e.g. `L1-7`, `SOCA 2.3`) mapped onto position → multi → circuit. Select Similar
    can now grab a whole circuit in one click, which closes half the loop. **Still the oldest
    open gap.**
+   **Built as item H** (September 22) — see §7. Awaiting acceptance against a real show CSV.
 10. **Device placement is numeric entry only.** Direct manipulation (drag in 3D plus a top-down
     view) is the next planned work, and is the plumbing prerequisite for cable paths (§9.11).
+    **Done in Chunk 6A.**
 11. **Cable paths — the planned architecture change, not yet built.** The user's framing,
     recorded verbatim because it supersedes rather than extends: *"Cable paths will serve as the
     defining rule set for where cable is allowed to run… cable break locations, hopovers, truss
@@ -723,6 +732,8 @@ Carry these forward — they are the honest edges of the current build.
     length follows the permitted route rather than the straight-line gap, changing `groupCables`
     at its core; and catenary sag returns in the one place it is physically real — an
     unsupported truss-to-truss swag.
+    **Built: tools in Chunk 6A, routing in Chunk 6B** (`RIGPOWER_SESSION_2026-09-23.md`). 6B samples
+    the quadratic sag shape rather than solving a true catenary.
 12. **Screen-space selection is depth-blind** — a marquee grabs fixtures behind other fixtures.
     Standard marquee behaviour; orbit or isolate first.
 13. **Channel-map drag re-address is single-fixture** — a multi-selection is not moved as a block.
