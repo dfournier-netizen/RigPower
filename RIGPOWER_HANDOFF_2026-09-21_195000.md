@@ -3,8 +3,47 @@
 > **Combined build - September 23, 2026:** `RIGPOWER_2026-09-23_222010.html` integrates Chunk 6B routing with E (settings persistence), F (live footprint updates and legacy migration), and H (circuit-name assignment). See `RIGPOWER_SESSION_2026-09-23_INTEGRATION.md` for current verification and remaining limitations. Older build pointers, roadmap status, and line references below are historical.
 
 
+## 0. Current status — September 23, 2026 (post-integration)
+
+*Added on branch `docs/post-integration-sync`. Supersedes the build pointer, iteration table and to-do states in §1–§2 and §8, which are kept as history.*
+
+**Develop from:** `RIGPOWER_2026-09-23_222010.html` on branch `codex/rigpower-integration` (pushed to origin, `1990b9f`). `main` is still `7dd4d34` — nothing is promoted until Dom reviews the combined build.
+
+**Active iterations** (4 of 4, FIFO — the next build moves `…220732` to `_to_delete/`):
+
+| File | Contents |
+|---|---|
+| `RIGPOWER_2026-09-22_220732.html` | E + F (pre-merge, E/F/H branch) |
+| `RIGPOWER_2026-09-22_233803.html` | E + F + H (pre-merge, E/F/H branch) |
+| `RIGPOWER_2026-09-23_130022.html` | Chunk 6B routing only (pre-merge, routing branch) |
+| `RIGPOWER_2026-09-23_222010.html` | **Combined 6B + E + F + H — current** |
+
+The September 21 regression baseline (`RIGPOWER_2026-09-21_204144.html`) is preserved in `_to_delete/`; `tests/verify-routing.cjs` finds it there.
+
+**To-do status** (letters as in §2):
+
+| Item | State | Where recorded |
+|---|---|---|
+| A — drag devices + plan view | **Done** (Chunk 6A) | `RIGPOWER_SESSION_2026-08-24_112141.md` §12 |
+| B — cable paths suite | **Done** — tools in 6A, routing in 6B. Limits: 1 mm junctions, 1 ft attachment tails, fallback for disconnected/return-requiring layouts, sampled quadratic swag | `RIGPOWER_SESSION_2026-09-23.md` |
+| C — `stockLengths` vs `JUMPER_STD` | Open — next candidate | |
+| D — Jumper/Data selects cosmetic | Open — fix with C | |
+| E — cable-layer settings + slack not saved | **Done** — `#uniSize`, `#jumperType`, `#dataType` still not saved | `RIGPOWER_SESSION_2026-09-22_215147.md` §1–4 |
+| F — auto-patch footprint snapshot | **Done** — legacy snapshots stripped on Load | same, §7 |
+| G — two-row sweep return leg | Open. 6B routing also falls back where a return leg would be needed, so G now touches both the sweep and the router | |
+| H — circuit-driven patching | **Done** — needs an acceptance check against a real show CSV | same, §9 |
+| I — home-run parts tally | Open — next candidate | |
+| J — dead code | Open. `solveSagScene` / `sagArc` / `curveLen` / `chainOrder` / `fixSeq` / `posSeq` / `multiSeq` still have no live callers in the combined build; the 6A comment saying swags gave `curveLen()` a job is stale since 6B samples the swag | reference §9 item 5 |
+| K — `segments[]` not uniform | Open — recheck against 6B's routed home-run segments before any new consumer relies on `aId` | |
+
+**Fastest path back in:** open `RIGPOWER_2026-09-23_222010.html`; Paths tab to draw routes; Auto-Cable tab for routed lengths and fallback reasons (orange = unrouted); Patch tab → *Assign from circuit names*. Still open from §8: the slack-default judgement call (10 % / 0.5 ft orders a 10 ft jumper on a 4.67 ft hop).
+
+**Reusable tests** are now tracked in the repo (`tests/`, commands in `tests/README.md`); the sandbox-only suites mentioned in §4 are history.
+
+---
+
 **Written:** Monday, September 21, 2026, 7:50:00 PM EDT
-**Current build:** `RIGPOWER_2026-08-25_103037.html` — 183,403 bytes, 3,477 lines
+**Current build (historical):** `RIGPOWER_2026-08-25_103037.html` — 183,403 bytes, 3,477 lines
 **Base (frozen, never modified):** `RIGPOWER.html` — 126,373 bytes, pre-merge standalone
 **Companion docs:** `RIGPOWER_PROJECT_NOTES_2026-09-21_195000.md` (structure & goals) · `RIGPOWER_SESSION_2026-08-24_112141.md` (full decision log for chunks 1–5) · `RIGPOWER_REFERENCE.md` (original technical reference — **partially stale, see §7**)
 
@@ -179,6 +218,11 @@ From prior sessions:
 
 8. **Never use the `Edit` tool on existing files here.** The Windows↔sandbox bridge has silently corrupted in-place edits — reported success, file truncated and NUL-padded to its pre-edit length — on at least four occasions. Do scripted string replacement in the sandbox and **byte-verify** (`wc -c`, `md5sum`) on both sides of any copy.
 9. **Minimal, surgical changes.** No refactoring of working systems.
+
+From Dom, September 23 (Git):
+
+10. **Build every new item on its own local Git branch**, in its own worktree beside `RigPower/` — never switch branches in the shared checkout. Cut it from the current development branch (§0).
+11. **Check the local Git repository for the fresh build** (`git branch -a -vv`, `git log --graph --all`) — the `RigPower/` folder on `main` does not show builds on other branches.
 
 ### The splice pattern that works
 

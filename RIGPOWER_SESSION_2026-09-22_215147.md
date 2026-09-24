@@ -105,3 +105,32 @@ Still clear of 6B: **H** (circuit-driven patching) is large; **J** (dead-code re
 Low-overlap items are exhausted: C/D, G, I, J all touch code 6B is rewiring. Also still to do before a release: update the `AGENTS.md` baseline and handoff §2 (E, F, H done) at merge time.
 
 **FIFO note:** the next build on this branch would retire `RIGPOWER_2026-09-21_204144.html` — the documented baseline and 6B's fork point. Decide at merge whether to exempt it.
+
+---
+
+## 11. Documentation sync after integration — September 23, 2026, 22:38 EDT
+
+Branch `docs/post-integration-sync`, cut from `codex/rigpower-integration` @ `1990b9f`, in worktree `RigPower-wt-docs-post-integration-sync`. Documentation only: no HTML build created, touched or retired.
+
+| Decision | Who | Detail |
+|---|---|---|
+| Review handoff and notes against the combined build | **[USER]** | |
+| Build new items on a local Git branch; check the local Git repo for fresh builds | **[USER]** | Standing rule. Added to `AGENTS.md` working rules and handoff §4 (rules 10–11). |
+| Do the docs fix on its own branch, not on the integration branch | **[AGENT]** | Follows the rule above; `codex/rigpower-integration` stays exactly as reviewed. |
+| Add a dated **§0 Current status** to the handoff instead of rewriting §1–§2 | **[AGENT]** | Surgical; the older sections stay as history, and the banner already said so. |
+| Inline dated status notes in the reference instead of a Revision 3 | **[AGENT]** | Revision 3 (folding in 6A/6B/E/F/H) is a bigger job for Dom to call. |
+
+**Checked on the combined build (`RIGPOWER_2026-09-23_222010.html`, from Git):** inline script passes `node --check`; `restoreCablePrefs` and the `_slack` save key present (E); no `it.footprint=fp`, Load strips it (F); `openCircuitAssign`, `#btnCktAssign` and `#ckModal` present (H). Behavioural suites were not re-run here; the integration log records them.
+
+**Stale items found and fixed:**
+- Handoff: build pointer, iteration table, to-do states and "fastest path" all described August 25 → new §0 with the current build, active iterations, an A–K status table and the current way in. §4 gains the Git rules.
+- `AGENTS.md`: step 3 still said the handoff predates Chunk 6A → points to §0. It said main hadn't been updated but didn't say the integration branch is pushed → now says both. Added the Git branch, fresh-build and lock-file rules.
+- Integration log: "nothing is pushed" is contradicted by `origin/codex/rigpower-integration` = `1990b9f` → dated correction appended (original sentence kept).
+- Reference: §4.2 instance `footprint`, §7 "not yet built", §8.2 "not saved", §9 items 3/4/5/9/10/11 → dated status notes.
+- Project notes: §6 still listed 6A/paths/H as future work → status note. §5 folder map → adds `tests/`, `tools/`, and the Git note.
+
+**Found, not changed (for Dom):**
+- Dead code (J) is unchanged, and the in-file 6A comment claiming `curveLen()` has a job is now false. A code fix, so it's for a build session.
+- K (`segments[]` uniformity) needs rechecking against 6B's routed home-run segments.
+- The Codex worktrees under `C:/Users/CDT_LD/.codex/worktrees/` show as "prunable" from the Cowork VM because it can't see Windows paths. They are live; don't prune from there.
+- Older session logs (`…_08-24_112141.md` §13, and this log's §§4, 10 on push status and FIFO) are records of their time and were left as written.

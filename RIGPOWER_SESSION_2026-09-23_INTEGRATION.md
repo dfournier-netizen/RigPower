@@ -37,3 +37,5 @@ Settings persistence covers the E fields listed above; universe size and jumper/
 [AGENT] Four active timestamped iterations are retained. The September 21 baseline and September 22 initial E build were moved intact to `_to_delete/`; hash checks confirmed preservation. The routing test locates its baseline there automatically. The merge also carries forward the other branch's earlier FIFO retirements. No archived builds were deleted.
 
 Review this combined build before promoting it to main. Next functional candidates are C/D stock consistency and home-run tally unification. This integration is committed locally only; nothing is pushed and main remains at `7dd4d34`.
+
+> **Correction, September 23, 22:38 EDT (docs sync, branch `docs/post-integration-sync`):** `origin/codex/rigpower-integration` now points at `1990b9f`, so the branch has since been pushed. `main` is still `7dd4d34`. The handoff (§0), project notes, reference status notes and `AGENTS.md` were updated to the combined state on that docs branch.

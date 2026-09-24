@@ -151,7 +151,10 @@ AV Tools and plugins/RIGPOWER/
   RIGPOWER_HANDOFF_<stamp>.md           current state + to-do
   RIGPOWER_PROJECT_NOTES_<stamp>.md     this file
   _to_delete/                           FIFO evictions awaiting manual deletion
+  tests/  tools/                        verification suites and patch provenance (Sept 23)
 ```
+
+The folder on disk is `RigPower/` and is a Git repository. New work happens on a local branch in its own worktree beside it; builds on other branches are not visible in the `main` checkout, so check Git for the current build (handoff §4, rules 10–11).
 
 **Context worth knowing:** RIGPOWER was merged into **DLux Rackmaster v6.0+** as the LIGHTING workspace (shadow-DOM isolated, libraries vendored inline) in July 2026. The standalone here is frozen at pre-merge and is where lighting-domain development continues. Any merge back needs to account for that.
 
@@ -166,6 +169,8 @@ Every change ships as a new timestamped file, capped at four, oldest-first. The 
 ---
 
 ## 6. What the next sessions are for
+
+> **Status September 23, 2026:** device drag + plan view (Chunk 6A), Cable Paths (6A tools, 6B routing) and circuit-driven patching (item H) are all built and combined in `RIGPOWER_2026-09-23_222010.html`. Current open work is in the handoff, §0.
 
 **Near:** drag devices and distros in 3D with a top-down view. Device placement sets every home-run origin and therefore every feed direction, so making it direct manipulation is the shortest path between a question and its answer.
 
