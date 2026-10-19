@@ -1,0 +1,68 @@
+# Publishes the newest RIGPOWER_YYYY-MM-DD_HHMMSS.html as RIGPOWER-<tag>.html
+# on a GitHub Release when a v* tag is pushed (e.g. v1.0.0). The build must
+# pass the repository's checks first. Pull requests that change this file run
+# the same checks without publishing.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+    paths: ['.github/workflows/release.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Select newest build
+        run: |
+          BUILD=$(ls RIGPOWER_20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9].html | sort | tail -n 1)
+          test -n "$BUILD"
+          echo "BUILD=$BUILD" >> "$GITHUB_ENV"
+          echo "Newest build: $BUILD"
+
+      - name: Syntax check inline application script
+        run: |
+          node -e '
+            const h = require("fs").readFileSync(process.argv[1], "utf8");
+            const s = [...h.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+            if (!s.length) throw new Error("no inline script found");
+            require("fs").writeFileSync(process.env.RUNNER_TEMP + "/app.js", s.sort((a, b) => b.length - a.length)[0]);
+          ' "$BUILD"
+          node --check "$RUNNER_TEMP/app.js"
+
+      - name: Engine checks
+        run: node tests/engine_test.cjs "$BUILD"
+
+      # Browser suites use Playwright with the runner's installed Google Chrome.
+      - name: Install Playwright
+        run: |
+          mkdir -p "$RUNNER_TEMP/pw"
+          npm install --prefix "$RUNNER_TEMP/pw" --no-audit --no-fund playwright
+          echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
+
+      - name: Routing checks
+        run: node tests/verify-routing.cjs "$BUILD"
+
+      - name: Combined checks
+        run: node tests/verify-combined.cjs "$BUILD"
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp "$BUILD" "RIGPOWER-$GITHUB_REF_NAME.html"
+          gh release create "$GITHUB_REF_NAME" "RIGPOWER-$GITHUB_REF_NAME.html" \
+            --title "RIGPOWER $GITHUB_REF_NAME" \
+            --notes "Built from $BUILD." \
+            --verify-tag
