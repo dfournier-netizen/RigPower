@@ -7,16 +7,16 @@
 
 *Added on branch `docs/post-integration-sync`. Supersedes the build pointer, iteration table and to-do states in §1–§2 and §8, which are kept as history.*
 
-**Develop from:** `RIGPOWER_2026-09-23_222010.html` on branch `codex/rigpower-integration` (pushed to origin, `1990b9f`). `main` is still `7dd4d34` — nothing is promoted until Dom reviews the combined build.
+**Develop from:** `RIGPOWER_2026-09-23_231032.html` on branch `feat/stock-breakouts-homeruns` (C/D + I, from `main` @ `1412b24`). *Updated 2026-09-23; the integration and docs PRs are merged into `main`.*
 
-**Active iterations** (4 of 4, FIFO — the next build moves `…220732` to `_to_delete/`):
+**Active iterations** (4 of 4, FIFO — the next build moves `…233803` to `_to_delete/`):
 
 | File | Contents |
 |---|---|
-| `RIGPOWER_2026-09-22_220732.html` | E + F (pre-merge, E/F/H branch) |
 | `RIGPOWER_2026-09-22_233803.html` | E + F + H (pre-merge, E/F/H branch) |
 | `RIGPOWER_2026-09-23_130022.html` | Chunk 6B routing only (pre-merge, routing branch) |
-| `RIGPOWER_2026-09-23_222010.html` | **Combined 6B + E + F + H — current** |
+| `RIGPOWER_2026-09-23_222010.html` | Combined 6B + E + F + H |
+| `RIGPOWER_2026-09-23_231032.html` | **+ C/D + I — current** |
 
 The September 21 regression baseline (`RIGPOWER_2026-09-21_204144.html`) is preserved in `_to_delete/`; `tests/verify-routing.cjs` finds it there.
 
@@ -26,17 +26,17 @@ The September 21 regression baseline (`RIGPOWER_2026-09-21_204144.html`) is pres
 |---|---|---|
 | A — drag devices + plan view | **Done** (Chunk 6A) | `RIGPOWER_SESSION_2026-08-24_112141.md` §12 |
 | B — cable paths suite | **Done** — tools in 6A, routing in 6B. Limits: 1 mm junctions, 1 ft attachment tails, fallback for disconnected/return-requiring layouts, sampled quadratic swag | `RIGPOWER_SESSION_2026-09-23.md` |
-| C — `stockLengths` vs `JUMPER_STD` | Open — next candidate | |
-| D — Jumper/Data selects cosmetic | Open — fix with C | |
+| C — `stockLengths` vs `JUMPER_STD` | **Done** — shared Power table on the Cables tab; DMX/Ethernet feed data jumpers | `RIGPOWER_SESSION_2026-09-23_231032.md` |
+| D — Jumper/Data selects cosmetic | **Done** — Data select picks DMX or Ethernet stock | same |
 | E — cable-layer settings + slack not saved | **Done** — `#uniSize`, `#jumperType`, `#dataType` still not saved | `RIGPOWER_SESSION_2026-09-22_215147.md` §1–4 |
 | F — auto-patch footprint snapshot | **Done** — legacy snapshots stripped on Load | same, §7 |
 | G — two-row sweep return leg | Open. 6B routing also falls back where a return leg would be needed, so G now touches both the sweep and the router | |
 | H — circuit-driven patching | **Done** — needs an acceptance check against a real show CSV | same, §9 |
-| I — home-run parts tally | Open — next candidate | |
+| I — home-run parts tally | **Done** — Breakout device; multis measured distro→breakout; breakout tails and measured data home runs tallied once; origins by device kind | same |
 | J — dead code | Open. `solveSagScene` / `sagArc` / `curveLen` / `chainOrder` / `fixSeq` / `posSeq` / `multiSeq` still have no live callers in the combined build; the 6A comment saying swags gave `curveLen()` a job is stale since 6B samples the swag | reference §9 item 5 |
-| K — `segments[]` not uniform | Open — recheck against 6B's routed home-run segments before any new consumer relies on `aId` | |
+| K — `segments[]` not uniform | Open — recheck against 6B's routed home-run segments and the new `homerun-multi` (no `aId`/`bId`) before any new consumer relies on them | |
 
-**Fastest path back in:** open `RIGPOWER_2026-09-23_222010.html`; Paths tab to draw routes; Auto-Cable tab for routed lengths and fallback reasons (orange = unrouted); Patch tab → *Assign from circuit names*. Still open from §8: the slack-default judgement call (10 % / 0.5 ft orders a 10 ft jumper on a 4.67 ft hop).
+**Fastest path back in:** open `RIGPOWER_2026-09-23_231032.html`; Devices tab to place distros, nodes/splitters and a Breakout per multi; Paths tab to draw routes; Auto-Cable tab for routed lengths and fallback reasons (orange = unrouted); Patch tab → *Assign from circuit names*. Still open from §8: the slack-default judgement call (10 % / 0.5 ft orders a 10 ft jumper on a 4.67 ft hop).
 
 **Reusable tests** are now tracked in the repo (`tests/`, commands in `tests/README.md`); the sandbox-only suites mentioned in §4 are history.
 
